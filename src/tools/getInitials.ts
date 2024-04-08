@@ -1,4 +1,4 @@
-const getInitials = (name: string, charactersToDisplay: number = 2) => {
+const getInitials = (name: string, charactersToDisplay: number = 1) => {
   return name
     .split(" ")
     .map((word) => word[0])

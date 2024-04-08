@@ -46,9 +46,15 @@ const LoginPasswordDialog: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await pb.collection(Collections.Users).authWithPassword(username, password);
-      router.replace("/");
+      if (username.startsWith("admin:")) {
+        await pb.admins.authWithPassword(username.split("").splice(6).join(""), password);
+        router.replace("/admin");
+      } else {
+        await pb.collection(Collections.Users).authWithPassword(username, password);
+        router.replace("/");
+      }
     } catch (err) {
+      console.error(err);
       setSubmitting(false);
     }
   };

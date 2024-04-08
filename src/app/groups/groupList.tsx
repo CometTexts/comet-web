@@ -17,15 +17,21 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import GroupListItem from "./groupListItem";
+import JoinGroupDialog from "./joinGroupDialog";
 
 const GroupList: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [joinGroupDialogOpen, setJoinGroupDialogOpen] = useState(false);
 
   const loadGroups = async () => {
     const groups = await pb.collection(Collections.Groups).getFullList<Group>();
     setGroups(groups);
     setLoading(false);
+  };
+
+  const openJoinGroupDialog = () => {
+    setJoinGroupDialogOpen(true);
   };
 
   useEffect(() => {
@@ -40,17 +46,26 @@ const GroupList: React.FC = () => {
     return (
       <>
         <Typography>No groups joined!</Typography>
-        <Button variant="contained">Join Group</Button>
+        <Button variant="contained" onClick={openJoinGroupDialog}>
+          Join Group
+        </Button>
+        <JoinGroupDialog isOpen={joinGroupDialogOpen} setIsOpen={setJoinGroupDialogOpen} loadGroups={loadGroups} />
       </>
     );
   }
 
   return (
-    <List style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      {groups.map((group) => {
-        return <GroupListItem group={group} key={group.id} />;
-      })}
-    </List>
+    <>
+      <List style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {groups.map((group) => {
+          return <GroupListItem group={group} key={group.id} />;
+        })}
+        <Button variant="contained" onClick={openJoinGroupDialog}>
+          Join Group
+        </Button>
+      </List>
+      <JoinGroupDialog isOpen={joinGroupDialogOpen} setIsOpen={setJoinGroupDialogOpen} loadGroups={loadGroups} />
+    </>
   );
 };
 

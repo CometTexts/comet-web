@@ -32,7 +32,13 @@ const MessageActionsMenu: React.FC<IProps> = ({ isOpen, setIsOpen, anchor, messa
   };
 
   const handleShowConfirmDeleteDialog = () => {
+    handleClose();
     setConfirmDeleteDialogOpen(true);
+  };
+
+  const handleShowEditMessageDialog = () => {
+    handleClose();
+    setEditMessageDialogOpen(true);
   };
 
   return (

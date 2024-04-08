@@ -1,5 +1,6 @@
 "use client";
 
+import useAuthStore from "@/hooks/useAuthStore";
 import pb from "@/pb";
 import { Handler } from "@/types";
 import { Group, Home, KeyboardArrowLeft, Logout, Settings } from "@mui/icons-material";
@@ -24,6 +25,7 @@ interface IProps {
 }
 
 const Drawer: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
+  const [authStore] = useAuthStore();
   const theme = useTheme();
   const router = useRouter();
   const pathname = usePathname();
@@ -56,46 +58,50 @@ const Drawer: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
         </div>
         <Divider />
         <List>
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={pathname === "/"}
-              href="/"
-              onClick={handleRedirect("/")}
-              onMouseEnter={handlePrefetch("/")}
-            >
-              <ListItemIcon sx={{ color: theme.palette.text.primary }}>
-                <Home />
-              </ListItemIcon>
-              <ListItemText primary="Home" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={pathname.startsWith("/groups")}
-              href="/groups"
-              onClick={handleRedirect("/groups")}
-              onMouseEnter={handlePrefetch("/groups")}
-            >
-              <ListItemIcon sx={{ color: theme.palette.text.primary }}>
-                <Group />
-              </ListItemIcon>
-              <ListItemText primary="Groups" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={pathname === "/settings"}
-              href="/settings"
-              onClick={handleRedirect("/settings")}
-              onMouseEnter={handlePrefetch("/settings")}
-            >
-              <ListItemIcon sx={{ color: theme.palette.text.primary }}>
-                <Settings />
-              </ListItemIcon>
-              <ListItemText primary="Settings" />
-            </ListItemButton>
-          </ListItem>
-          <Divider />
+          {!authStore.isAdmin && (
+            <>
+              <ListItem disablePadding>
+                <ListItemButton
+                  selected={pathname === "/"}
+                  href="/"
+                  onClick={handleRedirect("/")}
+                  onMouseEnter={handlePrefetch("/")}
+                >
+                  <ListItemIcon sx={{ color: theme.palette.text.primary }}>
+                    <Home />
+                  </ListItemIcon>
+                  <ListItemText primary="Home" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton
+                  selected={pathname.startsWith("/groups")}
+                  href="/groups"
+                  onClick={handleRedirect("/groups")}
+                  onMouseEnter={handlePrefetch("/groups")}
+                >
+                  <ListItemIcon sx={{ color: theme.palette.text.primary }}>
+                    <Group />
+                  </ListItemIcon>
+                  <ListItemText primary="Groups" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton
+                  selected={pathname === "/settings"}
+                  href="/settings"
+                  onClick={handleRedirect("/settings")}
+                  onMouseEnter={handlePrefetch("/settings")}
+                >
+                  <ListItemIcon sx={{ color: theme.palette.text.primary }}>
+                    <Settings />
+                  </ListItemIcon>
+                  <ListItemText primary="Settings" />
+                </ListItemButton>
+              </ListItem>
+              <Divider />
+            </>
+          )}
           <ListItem disablePadding>
             <ListItemButton
               href="/login"

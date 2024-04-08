@@ -6,6 +6,7 @@ import moment from "moment";
 import { useRef, useState } from "react";
 import MessageActionsMenu from "./messageActionsMenu";
 import useAuthStore from "@/hooks/useAuthStore";
+import pb from "@/pb";
 
 interface IProps {
   message: Message;
@@ -34,14 +35,16 @@ const MessageItem: React.FC<IProps> = ({ message, group }) => {
           marginBottom: ".5rem",
         }}
       >
-        <Avatar src={message.expand?.from.avatar}>{getInitials(message.expand?.from.name)}</Avatar>
+        <Avatar src={pb.files.getUrl(message.expand?.from, message.expand?.from.avatar)}>
+          {getInitials(message.expand?.from.name)}
+        </Avatar>
         <div style={{ flexGrow: 1 }}>
           <div style={{ display: "flex", flexDirection: "row", gap: 0 }}>
             <Typography fontWeight="bold">{message.expand?.from.name}</Typography>
             <Typography>
               &nbsp;-&nbsp;
               {moment(message.created).fromNow()}
-              {message.updated !== message.created ? `(edited ${moment(message.updated).fromNow()})` : undefined}
+              {message.updated !== message.created ? ` (edited ${moment(message.updated).fromNow()})` : undefined}
             </Typography>
           </div>
           <Typography>{message.text}</Typography>

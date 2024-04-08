@@ -1,8 +1,7 @@
 import { MouseEventHandler, ReactNode } from "react";
+import { RecordModel } from "pocketbase";
 
 export type ILayout = React.FC<{ children: ReactNode }>;
-
-import { RecordModel } from "pocketbase";
 
 export enum Collections {
   Users = "users",
@@ -36,3 +35,5 @@ export interface Message extends RecordModel {
 }
 
 export type Handler<T extends Array<any>> = (...arg0: T) => MouseEventHandler<HTMLAnchorElement>;
+
+export type WithExpand<T = any, E = any> = T & { expand: E };

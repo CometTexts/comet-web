@@ -1,5 +1,15 @@
-import { Message } from "@/types";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import pb from "@/pb";
+import { Collections, Message } from "@/types";
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
+import { useState } from "react";
 
 interface IProps {
   isOpen: boolean;
@@ -8,11 +18,24 @@ interface IProps {
 }
 
 const ConfirmDeleteDialog: React.FC<IProps> = ({ isOpen, setIsOpen, message }) => {
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+
   const handleClose = () => {
-    setIsOpen(false);
+    if (!isDeletingMessage) {
+      setIsOpen(false);
+    }
   };
 
-  const handleDeleteMessage = async () => {};
+  const handleDeleteMessage = async () => {
+    setIsDeletingMessage(true);
+    try {
+      await pb.collection(Collections.Messages).delete(message.id);
+      setIsDeletingMessage(false);
+      handleClose();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onClose={handleClose}>
@@ -23,9 +46,11 @@ const ConfirmDeleteDialog: React.FC<IProps> = ({ isOpen, setIsOpen, message }) =
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleDeleteMessage} color="error" variant="contained">
-          Delete
+        <Button disabled={isDeletingMessage} onClick={handleClose}>
+          Cancel
+        </Button>
+        <Button disabled={isDeletingMessage} onClick={handleDeleteMessage} color="error" variant="contained">
+          {isDeletingMessage ? <CircularProgress size={24} /> : "Delete"}
         </Button>
       </DialogActions>
     </Dialog>

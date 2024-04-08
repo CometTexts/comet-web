@@ -2,15 +2,24 @@
 
 import pb from "@/pb";
 import { Collections } from "@/types";
-import { Email, Google } from "@mui/icons-material";
+import { Email, Google, Key, Person } from "@mui/icons-material";
 import { Button, CircularProgress, FormControl, TextField, useTheme } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from "next/navigation";
-import { ChangeEventHandler, useState } from "react";
+import { ChangeEventHandler, useEffect, useState } from "react";
 import LoginPasswordDialog from "./passwordDialog";
+import { AuthMethodsList } from "pocketbase";
+import OAuthProvider from "./oAuthProvider";
 
 const Login: NextPage = () => {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [authMethods, setAuthMethods] = useState<AuthMethodsList>();
+
+  useEffect(() => {
+    (async () => {
+      setAuthMethods(await pb.collection(Collections.Users).listAuthMethods());
+    })();
+  }, []);
 
   return (
     <>
@@ -30,19 +39,37 @@ const Login: NextPage = () => {
             gap: ".5rem",
           }}
         >
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              setPasswordDialogOpen(true);
-            }}
-            startIcon={<Email />}
-          >
-            Continue with Email & Password
-          </Button>
-          <Button variant="contained" color="secondary" startIcon={<Google />}>
-            Continue with Google
-          </Button>
+          {authMethods?.emailPassword ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setPasswordDialogOpen(true);
+              }}
+              startIcon={<Email />}
+            >
+              Continue with Email & Password
+            </Button>
+          ) : authMethods?.usernamePassword ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setPasswordDialogOpen(true);
+              }}
+              startIcon={<Person />}
+            >
+              Continue with Username & Password
+            </Button>
+          ) : (
+            <Button disabled variant="contained" color="primary" startIcon={<Key />}>
+              Password Authentication Disabled
+            </Button>
+          )}
+
+          {authMethods?.authProviders.map((provider) => {
+            return <OAuthProvider provider={provider} key={provider.name} />;
+          })}
         </div>
       </div>
       <LoginPasswordDialog isOpen={passwordDialogOpen} setIsOpen={setPasswordDialogOpen} />
