@@ -13,7 +13,11 @@ const AuthManager: React.FC<React.PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     (async () => {
-      await pb.collection(Collections.Users).authRefresh();
+      try {
+        await pb.collection(Collections.Users).authRefresh();
+      } catch {
+        pb.authStore.clear();
+      }
 
       if (authStore.isValid) {
         if (pathname === "/login") {
