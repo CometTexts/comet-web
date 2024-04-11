@@ -9,12 +9,15 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   TextField,
   useTheme,
+  Link,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ChangeEventHandler, useContext, useState } from "react";
+import CreateAccountDialog from "./createAccountDialog";
 
 interface IProps {
   isOpen: boolean;
@@ -25,11 +28,13 @@ const LoginPasswordDialog: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showCreateAccountDialog, setShowCreateAccountDialog] = useState(false);
   const { setSnackbar } = useContext(snackbarContext);
   const router = useRouter();
 
   const handleClose = () => {
     if (!submitting) {
+      console.log("fully closing login");
       setIsOpen(false);
       setUsername("");
       setPassword("");
@@ -42,6 +47,11 @@ const LoginPasswordDialog: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
 
   const handlePasswordChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
     setPassword(evt.target.value);
+  };
+
+  const openCreateAccountDialog = () => {
+    setIsOpen(false);
+    setShowCreateAccountDialog(true);
   };
 
   const handleSubmit = async () => {
@@ -83,42 +93,65 @@ const LoginPasswordDialog: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose}>
-      <DialogTitle>Login</DialogTitle>
-      <form
-        onSubmit={(evt) => {
-          evt.preventDefault();
-        }}
-      >
-        <DialogContent>
-          <div style={{ display: "flex", flexDirection: "column", width: 350 }}>
-            <TextField disabled={submitting} label="Email" variant="filled" onChange={handleUsernameChange} />
-            <TextField
-              InputProps={{ style: { borderTopLeftRadius: 0, borderTopRightRadius: 0 } }}
+    <>
+      <Dialog open={isOpen} onClose={handleClose}>
+        <DialogTitle>Login</DialogTitle>
+        <form
+          onSubmit={(evt) => {
+            evt.preventDefault();
+          }}
+        >
+          <DialogContent>
+            <div style={{ display: "flex", flexDirection: "column", width: 350 }}>
+              <TextField
+                disabled={submitting}
+                label="Email"
+                variant="filled"
+                value={username}
+                onChange={handleUsernameChange}
+              />
+              <TextField
+                InputProps={{ style: { borderTopLeftRadius: 0, borderTopRightRadius: 0 } }}
+                disabled={submitting}
+                label="Password"
+                type="password"
+                variant="filled"
+                value={password}
+                onChange={handlePasswordChange}
+              />
+              <DialogContentText>
+                Don't have an account?{" "}
+                <Link href="#" onClick={openCreateAccountDialog}>
+                  Create one.
+                </Link>
+              </DialogContentText>
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <Button disabled={submitting} onClick={handleClose}>
+              Close
+            </Button>
+            <Button
+              type="submit"
               disabled={submitting}
-              label="Password"
-              type="password"
-              variant="filled"
-              onChange={handlePasswordChange}
-            />
-          </div>
-        </DialogContent>
-        <DialogActions>
-          <Button disabled={submitting} onClick={handleClose}>
-            Close
-          </Button>
-          <Button
-            type="submit"
-            disabled={submitting}
-            onClick={handleSubmit}
-            sx={{ alignSelf: "flex-end" }}
-            variant="contained"
-          >
-            {submitting ? <CircularProgress size={24} /> : "Login"}
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
+              onClick={handleSubmit}
+              sx={{ alignSelf: "flex-end" }}
+              variant="contained"
+            >
+              {submitting ? <CircularProgress size={24} /> : "Login"}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+      <CreateAccountDialog
+        isOpen={showCreateAccountDialog}
+        setIsOpen={setShowCreateAccountDialog}
+        setLoginIsOpen={setIsOpen}
+        fullyCloseLogin={handleClose}
+        defaultIdentification={username}
+        defaultPassword={password}
+      />
+    </>
   );
 };
 
