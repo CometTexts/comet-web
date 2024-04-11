@@ -14,4 +14,4 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 19.x
-      - run: pm2 restart coemt-web
+      - run: pm2 restart comet-web
