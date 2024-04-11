@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: "comet-web",
-      script: ".",
-      args: "-p 4096",
+      script: "pnpm",
+      args: "start -p 4096",
     },
   ],
 };
