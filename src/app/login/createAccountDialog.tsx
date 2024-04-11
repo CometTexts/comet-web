@@ -64,7 +64,6 @@ const CreateAccountDialog: React.FC<IProps> = ({
       setUsername(defaultIdentification.includes("@") ? "" : defaultIdentification);
       setPassword(defaultPassword ?? "");
       setPasswordConfirm("");
-      setLoginIsOpen(true);
     }
   };
 
