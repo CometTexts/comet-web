@@ -16,6 +16,7 @@ const AuthManager: React.FC<React.PropsWithChildren> = ({ children }) => {
       try {
         await pb.collection(Collections.Users).authRefresh();
       } catch {
+        console.info("Cannot refresh authentication! Logging out.");
         pb.authStore.clear();
       }
 
