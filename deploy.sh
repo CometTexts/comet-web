@@ -9,4 +9,4 @@ git checkout $latestTag
 rm -rf .next node_modules
 pnpm install
 pnpm build
-pnpm start
+pnpm start -p $PORT
