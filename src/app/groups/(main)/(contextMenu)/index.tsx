@@ -1,10 +1,12 @@
 import useAuthStore from "@/hooks/useAuthStore";
 import { Group } from "@/types";
-import { ContentCopy, Delete, Edit, Logout } from "@mui/icons-material";
+import { Cast, ContentCopy, Delete, Edit, Logout } from "@mui/icons-material";
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, useTheme } from "@mui/material";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import ConfirmDeleteDialog from "./confirmDelete";
 import GroupInfoDialog from "@/components/GroupInfoDialog";
+import { snackbarContext } from "@/components/SnackBar";
+import ProjectJoinCode from "./projectJoinCode";
 
 interface IProps {
   position: [number, number];
@@ -14,23 +16,24 @@ interface IProps {
 }
 
 const GroupListItemRightClickMenu: React.FC<IProps> = ({ position, isOpen, setIsOpen, group }) => {
+  const [showProjectJoinCodeDialog, setShowProjectJoinCodeDialog] = useState(false);
   const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false);
-  const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
   const [showEditGroupDialog, setShowEditGroupDialog] = useState(false);
   const [authStore] = useAuthStore();
+  const { setSnackbar } = useContext(snackbarContext);
   const theme = useTheme();
 
   const handleClose = () => {
     setIsOpen(false);
   };
 
-  const leaveGroup = () => {
-    setShowLeaveGroupDialog(true);
+  const openProjectJoinCodeDialog = () => {
+    setShowProjectJoinCodeDialog(true);
     handleClose();
   };
 
-  const deleteGroup = () => {
-    setShowDeleteGroupDialog(true);
+  const leaveGroup = () => {
+    setShowLeaveGroupDialog(true);
     handleClose();
   };
 
@@ -43,12 +46,22 @@ const GroupListItemRightClickMenu: React.FC<IProps> = ({ position, isOpen, setIs
     try {
       await navigator.clipboard.writeText(group.joinCode);
       handleClose();
-      //TODO: show success toast
+      setSnackbar({
+        message: "Copied text",
+        isAlert: true,
+        severity: "info",
+      });
     } catch (err) {
-      //TODO: display to user
+      setSnackbar({
+        message: "Failed to copy text!",
+        isAlert: true,
+        severity: "error",
+      });
       console.error(err);
     }
   };
+
+  const isOwner = group.owner === authStore.model?.id;
 
   return (
     <>
@@ -59,6 +72,18 @@ const GroupListItemRightClickMenu: React.FC<IProps> = ({ position, isOpen, setIs
         anchorPosition={{ left: position[0], top: position[1] }}
       >
         <MenuList disablePadding>
+          {isOwner ? (
+            <>
+              <MenuItem onClick={openProjectJoinCodeDialog}>
+                <ListItemIcon>
+                  <Cast />
+                </ListItemIcon>
+                <ListItemText>Project Join Code</ListItemText>
+              </MenuItem>
+            </>
+          ) : (
+            <></>
+          )}
           <MenuItem onClick={copyJoinCode}>
             <ListItemIcon>
               <ContentCopy />
@@ -66,7 +91,7 @@ const GroupListItemRightClickMenu: React.FC<IProps> = ({ position, isOpen, setIs
             <ListItemText>Copy Join Code</ListItemText>
           </MenuItem>
           <Divider />
-          {group.owner === authStore.model?.id ? (
+          {isOwner ? (
             <>
               <MenuItem onClick={editGroup}>
                 <ListItemIcon>
@@ -74,7 +99,7 @@ const GroupListItemRightClickMenu: React.FC<IProps> = ({ position, isOpen, setIs
                 </ListItemIcon>
                 <ListItemText>Edit Group</ListItemText>
               </MenuItem>
-              <MenuItem onClick={deleteGroup} TouchRippleProps={{ style: { color: theme.palette.error.main } }}>
+              <MenuItem TouchRippleProps={{ style: { color: theme.palette.error.main } }}>
                 <ListItemIcon>
                   <Delete sx={{ color: theme.palette.error.main }} />
                 </ListItemIcon>
@@ -93,7 +118,7 @@ const GroupListItemRightClickMenu: React.FC<IProps> = ({ position, isOpen, setIs
           )}
         </MenuList>
       </Menu>
-      <ConfirmDeleteDialog isOpen={showDeleteGroupDialog} setIsOpen={setShowDeleteGroupDialog} group={group} />
+      <ProjectJoinCode isOpen={showProjectJoinCodeDialog} setIsOpen={setShowProjectJoinCodeDialog} group={group} />
       <GroupInfoDialog
         isOpen={showEditGroupDialog}
         setIsOpen={setShowEditGroupDialog}

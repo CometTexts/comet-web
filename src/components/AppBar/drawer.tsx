@@ -17,7 +17,8 @@ import {
   useTheme,
 } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
-import { MouseEventHandler } from "react";
+import { MouseEventHandler, useContext } from "react";
+import { snackbarContext } from "../SnackBar";
 
 interface IProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface IProps {
 
 const Drawer: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
   const [authStore] = useAuthStore();
+  const { setSnackbar } = useContext(snackbarContext);
   const theme = useTheme();
   const router = useRouter();
   const pathname = usePathname();
@@ -108,6 +110,11 @@ const Drawer: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
               onClick={(evt) => {
                 evt.preventDefault();
                 pb.authStore.clear();
+                setSnackbar({
+                  message: "Successfully logged out!",
+                  isAlert: true,
+                  severity: "success",
+                });
                 router.push("/login");
                 setIsOpen(false);
               }}

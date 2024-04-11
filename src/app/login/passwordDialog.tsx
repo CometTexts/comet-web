@@ -1,5 +1,6 @@
 "use client";
 
+import { snackbarContext } from "@/components/SnackBar";
 import pb from "@/pb";
 import { Collections } from "@/types";
 import {
@@ -13,7 +14,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { ChangeEventHandler, useState } from "react";
+import { ChangeEventHandler, useContext, useState } from "react";
 
 interface IProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ const LoginPasswordDialog: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const theme = useTheme();
+  const { setSnackbar } = useContext(snackbarContext);
   const router = useRouter();
 
   const handleClose = () => {
@@ -48,14 +49,36 @@ const LoginPasswordDialog: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
     try {
       if (username.startsWith("admin:")) {
         await pb.admins.authWithPassword(username.split("").splice(6).join(""), password);
+        setSnackbar({
+          message: "Successfully logged in!",
+          isAlert: true,
+          severity: "success",
+        });
         router.replace("/admin");
       } else {
         await pb.collection(Collections.Users).authWithPassword(username, password);
+        setSnackbar({
+          message: "Successfully logged in!",
+          isAlert: true,
+          severity: "success",
+        });
         router.replace("/");
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
       setSubmitting(false);
+      if (err.message) {
+        setSnackbar({
+          message: err.message,
+          isAlert: true,
+          severity: "error",
+        });
+      } else {
+        setSnackbar({
+          message: "An unknown error occurred!",
+          isAlert: true,
+          severity: "error",
+        });
+      }
     }
   };
 

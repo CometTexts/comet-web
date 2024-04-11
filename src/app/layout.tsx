@@ -6,9 +6,10 @@ import ThemeRegistry from "@/components/ThemeRegistry";
 import ClientRecoilRoot from "@/client-providers/RecoilRoot";
 import { Typography } from "@mui/material";
 import AuthManager from "./authManager";
+import SnackbarProvider from "@/components/SnackBar";
 
 export const metadata: Metadata = {
-  title: "ChoirTexts",
+  title: "Comet",
 };
 
 const Layout: ILayout = ({ children }) => {
@@ -20,13 +21,15 @@ const Layout: ILayout = ({ children }) => {
             <AuthManager>
               <Container>
                 <AppBar />
-                <div style={{ height: 64 }} />
-                <noscript>
-                  <Typography variant="h4" fontWeight="bold" component="p">
-                    This site heavily relies on JavaScript! Please enable it for the best experience.
-                  </Typography>
-                </noscript>
-                {children}
+                <SnackbarProvider>
+                  <div style={{ height: 64 }} />
+                  <noscript>
+                    <Typography variant="h4" fontWeight="bold" component="p">
+                      This site heavily relies on JavaScript! Please enable it for the best experience.
+                    </Typography>
+                  </noscript>
+                  {children}
+                </SnackbarProvider>
               </Container>
             </AuthManager>
           </ThemeRegistry>

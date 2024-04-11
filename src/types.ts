@@ -17,6 +17,7 @@ export interface User extends RecordModel {
   name: string;
   avatar?: string;
   joinedGroups: string[];
+  subscriber: boolean;
 }
 
 export interface Group extends RecordModel {

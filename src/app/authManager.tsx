@@ -12,29 +12,33 @@ const AuthManager: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [authStore] = useAuthStore();
 
   useEffect(() => {
-    if (authStore.isValid) {
-      if (pathname === "/login") {
-        router.replace("/");
-      }
-    } else {
-      if (pathname !== "/login") {
-        router.replace("/login");
-      }
-    }
+    (async () => {
+      await pb.collection(Collections.Users).authRefresh();
 
-    if (authStore.isAdmin) {
-      if (pathname !== "/admin") {
-        router.replace("/admin");
-      }
-    } else {
-      if (pathname === "/admin") {
-        if (authStore.isValid) {
+      if (authStore.isValid) {
+        if (pathname === "/login") {
           router.replace("/");
-        } else {
+        }
+      } else {
+        if (pathname !== "/login") {
           router.replace("/login");
         }
       }
-    }
+
+      if (authStore.isAdmin) {
+        if (pathname !== "/admin") {
+          router.replace("/admin");
+        }
+      } else {
+        if (pathname === "/admin") {
+          if (authStore.isValid) {
+            router.replace("/");
+          } else {
+            router.replace("/login");
+          }
+        }
+      }
+    })();
   }, [pathname]);
 
   return children;

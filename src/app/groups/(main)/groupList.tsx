@@ -18,10 +18,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import GroupListItem from "./groupListItem";
 import JoinGroupDialog from "./joinGroupDialog";
+import useAuthStore from "@/hooks/useAuthStore";
 
 const GroupList: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authStore] = useAuthStore();
   const [joinGroupDialogOpen, setJoinGroupDialogOpen] = useState(false);
 
   const loadGroups = async () => {
@@ -60,9 +62,28 @@ const GroupList: React.FC = () => {
         {groups.map((group) => {
           return <GroupListItem group={group} key={group.id} />;
         })}
-        <Button variant="contained" onClick={openJoinGroupDialog}>
-          Join Group
-        </Button>
+        <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+          <Button
+            variant="contained"
+            onClick={openJoinGroupDialog}
+            sx={
+              authStore.model?.subscriber
+                ? { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }
+                : { flex: 1 }
+            }
+          >
+            Join Group
+          </Button>
+          {authStore.model?.subscriber && (
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{ flex: 1, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+            >
+              Create Group
+            </Button>
+          )}
+        </div>
       </List>
       <JoinGroupDialog isOpen={joinGroupDialogOpen} setIsOpen={setJoinGroupDialogOpen} loadGroups={loadGroups} />
     </>

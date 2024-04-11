@@ -30,7 +30,7 @@ const AppBar: React.FC = () => {
               whiteSpace: "nowrap",
             }}
           >
-            ChoirTexts
+            Comet
           </Link>
         </Typography>
       </Toolbar>

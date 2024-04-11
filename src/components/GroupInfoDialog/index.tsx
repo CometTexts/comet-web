@@ -18,6 +18,7 @@ import {
 import { RefObject, createContext, useEffect, useRef, useState } from "react";
 import GroupInfo from "./info";
 import GroupMembers from "./members";
+import useAuthStore from "@/hooks/useAuthStore";
 
 interface IProps {
   isOpen: boolean;
@@ -86,6 +87,7 @@ const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existin
   const iconInputRef = useRef<HTMLInputElement>(null);
   const [iconUrl, setIconUrl] = useState<string>();
   const theme = useTheme();
+  const [authStore] = useAuthStore();
 
   const handleClose = () => {
     setIsOpen(false);
@@ -97,6 +99,25 @@ const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existin
       iconInputRef.current.value = "";
     }
     setIconUrl(undefined);
+  };
+
+  const handleSubmit = async () => {
+    const formData = new FormData();
+
+    formData.append("name", groupName);
+    formData.append("joinCode", joinCode);
+    formData.append("owner", authStore.model?.id);
+    formData.append("allowedPosters", allowedPosters.map((user) => user.id).join(","));
+    if (iconInputRef.current?.files?.[0]) {
+      formData.append("icon", iconInputRef.current.files[0]);
+    }
+
+    if (existingGroupId) {
+      await pb.collection(Collections.Groups).update(existingGroupId, formData);
+    } else {
+      await pb.collection(Collections.Groups).create(formData);
+    }
+    setIsOpen(false);
   };
 
   useEffect(() => {
@@ -195,7 +216,9 @@ const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existin
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button variant="contained">Save</Button>
+        <Button variant="contained" onClick={handleSubmit}>
+          Save
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -1,3 +1,4 @@
+import { snackbarContext } from "@/components/SnackBar";
 import useAuthStore from "@/hooks/useAuthStore";
 import pb from "@/pb";
 import { Collections, User } from "@/types";
@@ -5,6 +6,7 @@ import { Google } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { AuthProviderInfo } from "pocketbase";
+import { useContext } from "react";
 
 interface IProps {
   provider: AuthProviderInfo;
@@ -17,6 +19,7 @@ const iconMap: { [key: string]: any } = {
 const OAuthProvider: React.FC<IProps> = ({ provider }) => {
   const router = useRouter();
   const [authStore] = useAuthStore();
+  const { setSnackbar } = useContext(snackbarContext);
 
   const handleOAuth = async () => {
     const authData = await pb.collection(Collections.Users).authWithOAuth2({ provider: provider.name });
@@ -33,6 +36,11 @@ const OAuthProvider: React.FC<IProps> = ({ provider }) => {
         }
       }
     }
+    setSnackbar({
+      message: "Successfully logged in!",
+      isAlert: true,
+      severity: "success",
+    });
     router.replace("/");
   };
 

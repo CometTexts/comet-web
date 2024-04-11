@@ -15,10 +15,11 @@ console.log("Initializing PB Events");
   });
 
   await pb.collection(Collections.Groups).subscribe("*", (data) => {
-    pocketBaseHandler.emit("groupEvent");
+    pocketBaseHandler.emit("groupEvent", data);
   });
 
   await pb.collection(Collections.Users).subscribe("*", (data) => {
-    pocketBaseHandler.emit("userEvent");
+    console.log(data);
+    pocketBaseHandler.emit("userEvent", data);
   });
 })();
