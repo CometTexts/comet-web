@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, ChangeEventHandler, KeyboardEventHandler, useContext, useMemo, useState } from "react";
+import { MuiTelInput, MuiTelInputInfo } from "mui-tel-input";
 
 interface IProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ const CreateAccountDialog: React.FC<IProps> = ({
 }) => {
   const [email, setEmail] = useState(defaultIdentification.includes("@") ? defaultIdentification : "");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [username, setUsername] = useState(defaultIdentification.includes("@") ? "" : defaultIdentification);
   const [password, setPassword] = useState(defaultPassword ?? "");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -79,6 +81,11 @@ const CreateAccountDialog: React.FC<IProps> = ({
     };
 
     return handler;
+  };
+
+  const handlePhoneChange = (value: string, info: MuiTelInputInfo) => {
+    console.log(value, info);
+    setPhone(value);
   };
 
   const handleSubmit = async () => {
@@ -134,6 +141,14 @@ const CreateAccountDialog: React.FC<IProps> = ({
               variant="filled"
               value={name}
               onChange={handleValueChange(setName)}
+            />
+            <MuiTelInput
+              disabled={submitting}
+              label="Phone Number (you can add more later)"
+              variant="filled"
+              value={phone}
+              onChange={handlePhoneChange}
+              defaultCountry="US"
             />
             <TextField
               disabled={submitting}

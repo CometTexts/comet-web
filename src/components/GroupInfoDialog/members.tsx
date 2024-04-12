@@ -2,10 +2,24 @@ import pb from "@/pb";
 import { Collections, User } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { stateContext } from ".";
-import { List, ListItem, ListItemText } from "@mui/material";
+import {
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  ListItemText,
+  Tooltip,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { Delete, Edit } from "@mui/icons-material";
+import MemberItem from "./memberItem";
 
 const GroupMembers: React.FC = () => {
   const state = useContext(stateContext);
+  const theme = useTheme();
   const [members, setMembers] = useState<User[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -29,15 +43,17 @@ const GroupMembers: React.FC = () => {
     }
 
     return (
-      <List>
-        {members.map((member) => {
-          return (
-            <ListItem key={member.id}>
-              <ListItemText primary={member.name} />
-            </ListItem>
-          );
-        })}
-      </List>
+      <>
+        <Typography sx={{ color: theme.palette.text.secondary }}>
+          {members.length} Member{members.length === 0 || members.length > 1 ? "s" : ""}
+        </Typography>
+        <List sx={{ overflowY: "scroll" }}>
+          <Divider />
+          {members.map((member) => {
+            return <MemberItem member={member} />;
+          })}
+        </List>
+      </>
     );
   }
 

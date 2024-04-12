@@ -107,7 +107,9 @@ const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existin
     formData.append("name", groupName);
     formData.append("joinCode", joinCode);
     formData.append("owner", authStore.model?.id);
-    formData.append("allowedPosters", allowedPosters.map((user) => user.id).join(","));
+    for (let i = 0; i < allowedPosters.length; i++) {
+      formData.append("allowedPosters", allowedPosters[i].id);
+    }
     if (iconInputRef.current?.files?.[0]) {
       formData.append("icon", iconInputRef.current.files[0]);
     }

@@ -3,7 +3,7 @@
 import pb from "@/pb";
 import getInitials from "@/tools/getInitials";
 // import { MessageEventHandler } from "@/app/pbEventInitializer";
-import { Collections, Group, Handler, Message } from "@/types";
+import { Collections, Group, Handler, Message, User, WithExpand } from "@/types";
 import {
   Avatar,
   IconButton,
@@ -27,7 +27,7 @@ interface IProps {
 }
 
 const GroupListItem: React.FC<IProps> = ({ group }) => {
-  const [latestMessage, setLatestMessage] = useState<Message>();
+  const [latestMessage, setLatestMessage] = useState<WithExpand<Message, { from: User }>>();
   const [loadingLatestMessage, setLoadingLatesMessage] = useState(true);
   const [contextOrigin, setContextOrigin] = useState<[number, number]>([0, 0]);
   const [contextOpen, setContextOpen] = useState(false);
@@ -69,7 +69,10 @@ const GroupListItem: React.FC<IProps> = ({ group }) => {
     try {
       const newLatestMessage = await pb
         .collection(Collections.Messages)
-        .getFirstListItem<Message>(`group="${group.id}"`, { sort: "-created", expand: "from" });
+        .getFirstListItem<WithExpand<Message, { from: User }>>(`group="${group.id}"`, {
+          sort: "-created",
+          expand: "from",
+        });
       setLatestMessage(newLatestMessage);
     } catch (err) {
       console.error(err);
@@ -142,9 +145,19 @@ const GroupListItem: React.FC<IProps> = ({ group }) => {
                     <Typography>Everly: Message</Typography>
                   </Skeleton>
                 ) : latestMessage ? (
-                  `${latestMessage.expand?.from.name}: ${latestMessage.text}`
+                  `${latestMessage.expand?.from.name.split(/[\ \_]/g)[0]}: ${latestMessage.text}`
                 ) : undefined
               }
+              secondaryTypographyProps={{
+                sx: {
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "initial",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                },
+              }}
             />
             <IconButton
               onClick={handleRightClick}

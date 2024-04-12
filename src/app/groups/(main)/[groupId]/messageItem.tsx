@@ -39,9 +39,11 @@ const MessageItem: React.FC<IProps> = ({ message, group }) => {
           {getInitials(message.expand?.from.name)}
         </Avatar>
         <div style={{ flexGrow: 1 }}>
-          <div style={{ display: "flex", flexDirection: "row", gap: 0 }}>
-            <Typography fontWeight="bold">{message.expand?.from.name}</Typography>
-            <Typography>
+          <div style={{ display: "block", flexDirection: "row", gap: 0 }}>
+            <Typography fontWeight="bold" sx={{ display: "inline" }}>
+              {message.expand?.from.name}
+            </Typography>
+            <Typography sx={{ display: "inline" }}>
               &nbsp;-&nbsp;
               {moment(message.created).fromNow()}
               {message.updated !== message.created ? ` (edited ${moment(message.updated).fromNow()})` : undefined}

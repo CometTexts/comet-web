@@ -18,7 +18,7 @@ const Layout: ILayout = ({ children }) => {
       </Paper>
       <div
         style={{
-          flexGrow: 1,
+          flex: 1,
           height: "100%",
           display: "flex",
           flexDirection: "column-reverse",
