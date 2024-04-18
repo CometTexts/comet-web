@@ -1,4 +1,6 @@
-git fetch --tags
+git reset --hard
+
+git fetch
 
 latestTag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 
