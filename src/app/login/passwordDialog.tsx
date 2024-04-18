@@ -34,7 +34,6 @@ const LoginPasswordDialog: React.FC<IProps> = ({ isOpen, setIsOpen }) => {
 
   const handleClose = () => {
     if (!submitting) {
-      console.log("fully closing login");
       setIsOpen(false);
       setUsername("");
       setPassword("");

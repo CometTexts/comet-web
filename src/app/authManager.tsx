@@ -1,22 +1,28 @@
 "use client";
 
+import { snackbarContext } from "@/components/SnackBar";
 import useAuthStore from "@/hooks/useAuthStore";
 import pb from "@/pb";
 import { Collections } from "@/types";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 
 const AuthManager: React.FC<React.PropsWithChildren> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [authStore] = useAuthStore();
+  const { setSnackbar } = useContext(snackbarContext);
 
   useEffect(() => {
     (async () => {
       try {
         await pb.collection(Collections.Users).authRefresh();
       } catch {
-        console.info("Cannot refresh authentication! Logging out.");
+        setSnackbar({
+          message: "Cannot refresh authentication! Logging out.",
+          isAlert: true,
+          severity: "error",
+        });
         pb.authStore.clear();
       }
 

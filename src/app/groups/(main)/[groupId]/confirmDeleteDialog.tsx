@@ -1,3 +1,4 @@
+import { snackbarContext } from "@/components/SnackBar";
 import pb from "@/pb";
 import { Collections, Message } from "@/types";
 import {
@@ -9,7 +10,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 interface IProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ interface IProps {
 
 const ConfirmDeleteDialog: React.FC<IProps> = ({ isOpen, setIsOpen, message }) => {
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+  const { setSnackbar } = useContext(snackbarContext);
 
   const handleClose = () => {
     if (!isDeletingMessage) {
@@ -34,6 +36,11 @@ const ConfirmDeleteDialog: React.FC<IProps> = ({ isOpen, setIsOpen, message }) =
       handleClose();
     } catch (err) {
       console.error(err);
+      setSnackbar({
+        message: "Failed to delete message!",
+        isAlert: true,
+        severity: "error",
+      });
     }
   };
 

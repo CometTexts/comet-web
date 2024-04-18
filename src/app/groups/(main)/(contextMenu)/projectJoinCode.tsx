@@ -2,9 +2,10 @@ import { snackbarContext } from "@/components/SnackBar";
 import { PBEventHandler, pocketBaseHandler } from "@/messageEventHandler";
 import pb from "@/pb";
 import { Collections, Group, User } from "@/types";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link } from "@mui/material";
 import { Roboto_Mono } from "next/font/google";
 import { useContext, useEffect, useState } from "react";
+import endpoints from "@/endpoints.json";
 
 const RobotoMono = Roboto_Mono({
   weight: ["300", "400", "500", "700"],
@@ -24,10 +25,19 @@ const ProjectJoinCode: React.FC<IProps> = ({ group, isOpen, setIsOpen }) => {
   const { setSnackbar } = useContext(snackbarContext);
 
   const fetchMembers = async () => {
-    const members = await pb.collection(Collections.Users).getFullList({ filter: `joinedGroups.id ?= "${group.id}"` });
-    console.log(members.length);
-
-    setMembers(members.length);
+    try {
+      const members = await pb
+        .collection(Collections.Users)
+        .getFullList({ filter: `joinedGroups.id ?= "${group.id}"` });
+      setMembers(members.length);
+    } catch (err) {
+      console.error(err);
+      setSnackbar({
+        message: "Failed to fetch members!",
+        isAlert: true,
+        severity: "error",
+      });
+    }
   };
 
   useEffect(() => {
@@ -66,6 +76,25 @@ const ProjectJoinCode: React.FC<IProps> = ({ group, isOpen, setIsOpen }) => {
     }
   };
 
+  const copyJoinLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${endpoints.host}/groups/join/${group.joinCode}`);
+      handleClose();
+      setSnackbar({
+        message: "Copied link",
+        isAlert: true,
+        severity: "info",
+      });
+    } catch (err) {
+      setSnackbar({
+        message: "Failed to copy link!",
+        isAlert: true,
+        severity: "error",
+      });
+      console.error(err);
+    }
+  };
+
   return (
     <Dialog fullScreen open={isOpen} onClose={handleClose}>
       <DialogTitle>{group.name} Join Code</DialogTitle>
@@ -74,11 +103,17 @@ const ProjectJoinCode: React.FC<IProps> = ({ group, isOpen, setIsOpen }) => {
           {group.joinCode}
         </DialogContentText>
         <DialogContentText>
+          <Link href={`${endpoints.host}/groups/join/${group.joinCode}`} target="_blank">
+            {endpoints.host}/groups/join/{group.joinCode}
+          </Link>
+        </DialogContentText>
+        <DialogContentText>
           {members} Member{members === 0 || members > 1 ? "s" : ""}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={copyJoinCode}>Copy</Button>
+        <Button onClick={copyJoinCode}>Copy Code</Button>
+        <Button onClick={copyJoinLink}>Copy Link</Button>
         <Button variant="contained" onClick={handleClose}>
           Close
         </Button>

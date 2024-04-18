@@ -1,12 +1,14 @@
 import getInitials from "@/tools/getInitials";
 import { Group, Message } from "@/types";
 import { MoreVert } from "@mui/icons-material";
-import { Avatar, IconButton, Paper, Typography } from "@mui/material";
+import { Avatar, IconButton, Paper, Tooltip, Typography } from "@mui/material";
 import moment from "moment";
 import { useRef, useState } from "react";
 import MessageActionsMenu from "./messageActionsMenu";
 import useAuthStore from "@/hooks/useAuthStore";
 import pb from "@/pb";
+import MomentFromNow from "@/components/MomentFromNow";
+import MessageAttachment from "./messageAttachment";
 
 interface IProps {
   message: Message;
@@ -33,6 +35,7 @@ const MessageItem: React.FC<IProps> = ({ message, group }) => {
           overflowAnchor: "none",
           marginTop: ".5rem",
           marginBottom: ".5rem",
+          width: "100%",
         }}
       >
         <Avatar src={pb.files.getUrl(message.expand?.from, message.expand?.from.avatar)}>
@@ -44,12 +47,31 @@ const MessageItem: React.FC<IProps> = ({ message, group }) => {
               {message.expand?.from.name}
             </Typography>
             <Typography sx={{ display: "inline" }}>
-              &nbsp;-&nbsp;
-              {moment(message.created).fromNow()}
-              {message.updated !== message.created ? ` (edited ${moment(message.updated).fromNow()})` : undefined}
+              {" "}
+              -{" "}
+              <Tooltip title={moment(message.created).format("dddd[,] MMMM Do[,] YYYY h[:]mmA")} arrow placement="top">
+                <span>
+                  <MomentFromNow>{message.created}</MomentFromNow>
+                </span>
+              </Tooltip>
+              {message.updated !== message.created ? (
+                <Tooltip
+                  title={moment(message.updated).format("dddd[,] MMMM Do[,] YYYY h[:]mmA")}
+                  arrow
+                  placement="top"
+                >
+                  <span>
+                    {" "}
+                    (edited <MomentFromNow>{message.updated}</MomentFromNow>)
+                  </span>
+                </Tooltip>
+              ) : undefined}
             </Typography>
           </div>
-          <Typography>{message.text}</Typography>
+          {message.text !== "$^attachment-only^$" && <Typography>{message.text}</Typography>}
+          {message.attachment && message.attachmentType && (
+            <MessageAttachment variant={message.attachmentType} label={message.attachment} record={message} />
+          )}
         </div>
         {authStore.model?.id === message.from || authStore.model?.id === group?.owner ? (
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>

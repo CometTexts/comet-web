@@ -1,5 +1,5 @@
 import { ChangeEventHandler, RefObject, useContext } from "react";
-import { stateContext } from ".";
+import { generateJoinCode, stateContext } from ".";
 import { Avatar, Button, IconButton, InputAdornment, TextField, Tooltip } from "@mui/material";
 import getInitials from "@/tools/getInitials";
 import { Replay } from "@mui/icons-material";
@@ -18,7 +18,7 @@ const GroupInfo: React.FC = () => {
   };
 
   const regenerateJoinCode = () => {
-    state.joinCode.setState([...Array(8)].map(() => Math.floor(Math.random() * 16).toString(16)).join(""));
+    state.joinCode.setState(generateJoinCode());
   };
 
   const handleOpenFileUpload = () => {

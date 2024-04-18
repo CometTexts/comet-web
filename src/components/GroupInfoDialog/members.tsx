@@ -3,6 +3,7 @@ import { Collections, User } from "@/types";
 import { useContext, useEffect, useState } from "react";
 import { stateContext } from ".";
 import {
+  CircularProgress,
   Divider,
   IconButton,
   List,
@@ -57,7 +58,11 @@ const GroupMembers: React.FC = () => {
     );
   }
 
-  return <p>loading</p>;
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+      <CircularProgress />
+    </div>
+  );
 };
 
 export default GroupMembers;

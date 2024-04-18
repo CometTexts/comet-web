@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { ReactNode, RefObject, useState } from "react";
 import ConfirmDeleteDialog from "./confirmDeleteDialog";
+import EditDialog from "./editDialog";
 
 interface IProps {
   isOpen: boolean;
@@ -46,7 +47,7 @@ const MessageActionsMenu: React.FC<IProps> = ({ isOpen, setIsOpen, anchor, messa
       <Menu open={isOpen} anchorEl={anchor.current} onClose={handleClose}>
         <MenuList disablePadding>
           <ListItem disableGutters disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={handleShowEditMessageDialog}>
               <ListItemIcon>
                 <Edit />
               </ListItemIcon>
@@ -67,6 +68,7 @@ const MessageActionsMenu: React.FC<IProps> = ({ isOpen, setIsOpen, anchor, messa
         </MenuList>
       </Menu>
       <ConfirmDeleteDialog isOpen={confirmDeleteDialogOpen} setIsOpen={setConfirmDeleteDialogOpen} message={message} />
+      <EditDialog isOpen={editMessageDialogOpen} setIsOpen={setEditMessageDialogOpen} message={message} />
     </>
   );
 };

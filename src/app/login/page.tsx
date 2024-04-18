@@ -6,18 +6,28 @@ import { Email, Google, Key, Person } from "@mui/icons-material";
 import { Button, CircularProgress, FormControl, TextField, useTheme } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from "next/navigation";
-import { ChangeEventHandler, useEffect, useState } from "react";
+import { ChangeEventHandler, useContext, useEffect, useState } from "react";
 import LoginPasswordDialog from "./passwordDialog";
 import { AuthMethodsList } from "pocketbase";
 import OAuthProvider from "./oAuthProvider";
+import { snackbarContext } from "@/components/SnackBar";
 
 const Login: NextPage = () => {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [authMethods, setAuthMethods] = useState<AuthMethodsList>();
+  const { setSnackbar } = useContext(snackbarContext);
 
   useEffect(() => {
     (async () => {
-      setAuthMethods(await pb.collection(Collections.Users).listAuthMethods());
+      try {
+        setAuthMethods(await pb.collection(Collections.Users).listAuthMethods());
+      } catch {
+        setSnackbar({
+          message: "Failed to fetch authentication methods!",
+          isAlert: true,
+          severity: "error",
+        });
+      }
     })();
   }, []);
 

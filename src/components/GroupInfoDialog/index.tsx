@@ -15,10 +15,12 @@ import {
   Paper,
   useTheme,
 } from "@mui/material";
-import { RefObject, createContext, useEffect, useRef, useState } from "react";
+import { RefObject, createContext, useContext, useEffect, useRef, useState } from "react";
 import GroupInfo from "./info";
 import GroupMembers from "./members";
 import useAuthStore from "@/hooks/useAuthStore";
+import { useRouter } from "next/navigation";
+import { snackbarContext } from "../SnackBar";
 
 interface IProps {
   isOpen: boolean;
@@ -79,6 +81,10 @@ export const stateContext = createContext<State>({
   },
 });
 
+export const generateJoinCode = () => {
+  return [...Array(8)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+};
+
 const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existingGroupId }) => {
   const [page, setPage] = useState<Page>("info");
   const [groupName, setGroupName] = useState<string>("");
@@ -88,6 +94,12 @@ const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existin
   const [iconUrl, setIconUrl] = useState<string>();
   const theme = useTheme();
   const [authStore] = useAuthStore();
+  const router = useRouter();
+  const { setSnackbar } = useContext(snackbarContext);
+
+  if (variant === "update" && existingGroupId === undefined) {
+    throw "existingGroupId is required if variant is update!";
+  }
 
   const handleClose = () => {
     setIsOpen(false);
@@ -110,25 +122,58 @@ const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existin
     for (let i = 0; i < allowedPosters.length; i++) {
       formData.append("allowedPosters", allowedPosters[i].id);
     }
+    console.log(iconUrl);
     if (iconInputRef.current?.files?.[0]) {
       formData.append("icon", iconInputRef.current.files[0]);
+    } else {
+      if (iconUrl === undefined) {
+        formData.append("icon", "");
+      }
     }
 
-    if (existingGroupId) {
-      await pb.collection(Collections.Groups).update(existingGroupId, formData);
+    if (variant === "update") {
+      try {
+        await pb.collection(Collections.Groups).update(existingGroupId!, formData);
+      } catch {
+        setSnackbar({
+          message: "Failed to update group!",
+          isAlert: true,
+          severity: "error",
+        });
+      }
     } else {
-      await pb.collection(Collections.Groups).create(formData);
+      try {
+        const group = await pb.collection(Collections.Groups).create<Group>(formData);
+        //Join group
+        try {
+          await pb.collection(Collections.Users).update(authStore.model?.id, {
+            joinedGroups: [...authStore.model?.joinedGroups, group.id],
+          });
+        } catch (err) {
+          setSnackbar({
+            message: "Failed to join group! Please try manually joining with the join code!",
+            isAlert: true,
+            severity: "error",
+          });
+        }
+      } catch {
+        setSnackbar({
+          message: "Failed to create group!",
+          isAlert: true,
+          severity: "error",
+        });
+      }
     }
-    setIsOpen(false);
+    handleClose();
   };
 
   useEffect(() => {
     if (isOpen === true) {
-      if (existingGroupId) {
+      if (variant === "update") {
         (async () => {
           const group = await pb
             .collection(Collections.Groups)
-            .getOne<WithExpand<Group, { allowedPosters: User[] }>>(existingGroupId, { expand: "allowedPosters" });
+            .getOne<WithExpand<Group, { allowedPosters: User[] }>>(existingGroupId!, { expand: "allowedPosters" });
 
           setGroupName(group.name);
           setJoinCode(group.joinCode);
@@ -137,6 +182,8 @@ const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existin
             setIconUrl(pb.files.getUrl(group, group.icon));
           }
         })();
+      } else {
+        setJoinCode(generateJoinCode());
       }
     }
   }, [isOpen]);
@@ -153,32 +200,34 @@ const GroupInfoDialog: React.FC<IProps> = ({ isOpen, setIsOpen, variant, existin
         {variant === "create" ? "Create Group" : groupName ? `Edit ${groupName}` : "Edit Group"}
       </DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "row", gap: "1rem" }}>
-        <Paper sx={{ width: "fit-content" }}>
-          <List disablePadding>
-            <ListItem disableGutters disablePadding>
-              <ListItemButton
-                selected={page === "info"}
-                onClick={setSelectedPage("info")}
-                sx={{ borderTopLeftRadius: theme.shape.borderRadius, borderTopRightRadius: theme.shape.borderRadius }}
-              >
-                <ListItemText sx={{ whiteSpace: "nowrap" }} primary="Group Info" />
-              </ListItemButton>
-            </ListItem>
-            <Divider />
-            <ListItem disableGutters disablePadding>
-              <ListItemButton
-                selected={page === "members"}
-                onClick={setSelectedPage("members")}
-                sx={{
-                  borderBottomLeftRadius: theme.shape.borderRadius,
-                  borderBottomRightRadius: theme.shape.borderRadius,
-                }}
-              >
-                <ListItemText primary="Members" />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        </Paper>
+        {variant === "update" && (
+          <Paper sx={{ width: "fit-content" }}>
+            <List disablePadding>
+              <ListItem disableGutters disablePadding>
+                <ListItemButton
+                  selected={page === "info"}
+                  onClick={setSelectedPage("info")}
+                  sx={{ borderTopLeftRadius: theme.shape.borderRadius, borderTopRightRadius: theme.shape.borderRadius }}
+                >
+                  <ListItemText sx={{ whiteSpace: "nowrap" }} primary="Group Info" />
+                </ListItemButton>
+              </ListItem>
+              <Divider />
+              <ListItem disableGutters disablePadding>
+                <ListItemButton
+                  selected={page === "members"}
+                  onClick={setSelectedPage("members")}
+                  sx={{
+                    borderBottomLeftRadius: theme.shape.borderRadius,
+                    borderBottomRightRadius: theme.shape.borderRadius,
+                  }}
+                >
+                  <ListItemText primary="Members" />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </Paper>
+        )}
         {/* <Divider orientation="vertical" sx={{ height: "100px" }} /> */}
         <div
           style={{

@@ -18,9 +18,11 @@ import {
 } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { RecordSubscription } from "pocketbase";
-import { MouseEventHandler, useCallback, useEffect, useState } from "react";
+import { MouseEventHandler, useCallback, useContext, useEffect, useState } from "react";
 import GroupListItemRightClickMenu from "./(contextMenu)/index";
 import { MoreVert } from "@mui/icons-material";
+import { PBEventHandler, pocketBaseHandler } from "@/messageEventHandler";
+import { snackbarContext } from "@/components/SnackBar";
 
 interface IProps {
   group: Group;
@@ -36,6 +38,7 @@ const GroupListItem: React.FC<IProps> = ({ group }) => {
   const router = useRouter();
   const pathname = usePathname();
   const theme = useTheme();
+  const { setSnackbar } = useContext(snackbarContext);
 
   const handleClick: MouseEventHandler<HTMLAnchorElement> = (evt) => {
     evt.preventDefault();
@@ -84,39 +87,70 @@ const GroupListItem: React.FC<IProps> = ({ group }) => {
     fetchLatestMessage();
   }, []);
 
-  // const handleMessageEvent: MessageEventHandler = async ({ action, record }) => {
-  //   if (record.group === group.id) {
-  //     switch (action) {
-  //       case "create": {
-  //         if (new Date(record.created) > new Date(latestMessage?.created ?? 0)) {
-  //           const from = await pb.collection(Collections.Users).getOne(record.from);
-  //           const newRecord = { ...record, expand: { from } };
-  //           setLatestMessage(newRecord);
-  //         }
-  //         break;
-  //       }
-  //       case "update": {
-  //         if (record.id === latestMessage?.id) {
-  //           const newRecord = { ...record, expand: { from: latestMessage?.expand?.from } };
-  //           setLatestMessage(newRecord);
-  //         }
-  //         break;
-  //       }
-  //       case "delete": {
-  //         fetchLatestMessage();
-  //         break;
-  //       }
-  //     }
-  //   }
-  // };
+  useEffect(() => {
+    const handleMessageEvent: PBEventHandler<Message> = async ({ action, record }) => {
+      console.log(action, record);
+      if (record.group === group.id) {
+        switch (action) {
+          case "create": {
+            try {
+              const messageUser = await pb.collection<User>(Collections.Users).getOne(record.from);
+              setLatestMessage({
+                ...record,
+                expand: {
+                  from: messageUser,
+                },
+              });
+            } catch (err) {
+              setSnackbar({
+                message: "Failed to fetch user data of newly sent message!",
+                isAlert: true,
+                severity: "error",
+              });
+            }
+            break;
+          }
+          case "update": {
+            if (latestMessage) {
+              setLatestMessage({
+                ...record,
+                expand: {
+                  from: latestMessage.expand.from,
+                },
+              });
+            } else {
+              try {
+                const messageUser = await pb.collection<User>(Collections.Users).getOne(record.from);
+                setLatestMessage({
+                  ...record,
+                  expand: {
+                    from: messageUser,
+                  },
+                });
+              } catch {
+                setSnackbar({
+                  message: "Failed to fetch user data of recently updated message!",
+                  isAlert: true,
+                  severity: "error",
+                });
+              }
+            }
+            break;
+          }
+          case "delete": {
+            fetchLatestMessage();
+            break;
+          }
+        }
+      }
+    };
 
-  // useEffect(() => {
-  //   document.addEventListener("pbMessage", handleMessageEvent as any);
+    pocketBaseHandler.on("messageEvent", handleMessageEvent);
 
-  //   return () => {
-  //     document.removeEventListener("pbMessage", handleMessageEvent as any);
-  //   };
-  // }, [latestMessage]);
+    return () => {
+      pocketBaseHandler.removeListener("messageEvent", handleMessageEvent);
+    };
+  }, [group]);
 
   return (
     <>
@@ -145,7 +179,9 @@ const GroupListItem: React.FC<IProps> = ({ group }) => {
                     <Typography>Everly: Message</Typography>
                   </Skeleton>
                 ) : latestMessage ? (
-                  `${latestMessage.expand?.from.name.split(/[\ \_]/g)[0]}: ${latestMessage.text}`
+                  `${latestMessage.expand?.from.name.split(/[\ \_]/g)[0]}${
+                    latestMessage.text === "$^attachment-only^$" ? " sent an attachment" : `: ${latestMessage.text}`
+                  }`
                 ) : undefined
               }
               secondaryTypographyProps={{

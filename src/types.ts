@@ -28,11 +28,14 @@ export interface Group extends RecordModel {
   icon?: string;
 }
 
+export type AttachmentType = "image" | "video" | "audio" | "file";
+
 export interface Message extends RecordModel {
   group: string;
   from: string;
-  /** HTML */
   text: string;
+  attachmentType?: AttachmentType;
+  attachment?: string;
 }
 
 export type Handler<T extends Array<any>> = (...arg0: T) => MouseEventHandler<HTMLAnchorElement>;

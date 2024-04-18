@@ -22,26 +22,34 @@ const OAuthProvider: React.FC<IProps> = ({ provider }) => {
   const { setSnackbar } = useContext(snackbarContext);
 
   const handleOAuth = async () => {
-    const authData = await pb.collection(Collections.Users).authWithOAuth2({ provider: provider.name });
-    switch (provider.name) {
-      case "google": {
-        await pb.collection(Collections.Users).update<User>(authData.record.id, {
-          name: authData.meta?.name,
-        } as User);
-        if (authData.meta?.avatarUrl) {
-          const pfp = await fetch(authData.meta?.avatarUrl).then((res) => res.blob());
-          const formData = new FormData();
-          formData.append("avatar", pfp);
-          await pb.collection(Collections.Users).update(authData.record.id, formData);
+    try {
+      const authData = await pb.collection(Collections.Users).authWithOAuth2({ provider: provider.name });
+      switch (provider.name) {
+        case "google": {
+          await pb.collection(Collections.Users).update<User>(authData.record.id, {
+            name: authData.meta?.name,
+          } as User);
+          if (authData.meta?.avatarUrl) {
+            const pfp = await fetch(authData.meta?.avatarUrl).then((res) => res.blob());
+            const formData = new FormData();
+            formData.append("avatar", pfp);
+            await pb.collection(Collections.Users).update(authData.record.id, formData);
+          }
         }
       }
+      setSnackbar({
+        message: "Successfully logged in!",
+        isAlert: true,
+        severity: "success",
+      });
+      router.replace("/");
+    } catch {
+      setSnackbar({
+        message: "Failed to authenticate!",
+        isAlert: true,
+        severity: "error",
+      });
     }
-    setSnackbar({
-      message: "Successfully logged in!",
-      isAlert: true,
-      severity: "success",
-    });
-    router.replace("/");
   };
 
   return (

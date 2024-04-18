@@ -3,20 +3,30 @@
 import pb from "@/pb";
 import { Collections, User } from "@/types";
 import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
-import { ChangeEventHandler, useEffect, useState } from "react";
+import { ChangeEventHandler, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import endpoints from "@/endpoints.json";
 import useAuthStore from "@/hooks/useAuthStore";
+import { snackbarContext } from "@/components/SnackBar";
 
 const MassNotification: React.FC = () => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userIds, setUserIds] = useState<string[]>(["*"]);
   const [message, setMessage] = useState("");
   const [authStore] = useAuthStore();
+  const { setSnackbar } = useContext(snackbarContext);
 
   useEffect(() => {
     (async () => {
-      setAllUsers(await pb.collection(Collections.Users).getFullList());
+      try {
+        setAllUsers(await pb.collection(Collections.Users).getFullList());
+      } catch (err) {
+        setSnackbar({
+          message: "Failed to fetch users!",
+          isAlert: true,
+          severity: "error",
+        });
+      }
     })();
   }, []);
 

@@ -4,7 +4,7 @@ import GroupList from "./groupList";
 
 const Layout: ILayout = ({ children }) => {
   return (
-    <div style={{ display: "flex", height: "calc(100% - 64px)" }}>
+    <div style={{ display: "flex", height: "calc(100vh - 64px)" }}>
       <Paper
         style={{
           width: 300,
@@ -12,6 +12,7 @@ const Layout: ILayout = ({ children }) => {
           height: "100%",
           overflowY: "scroll",
           borderRadius: 0,
+          flexShrink: 0,
         }}
       >
         <GroupList />
@@ -20,6 +21,7 @@ const Layout: ILayout = ({ children }) => {
         style={{
           flex: 1,
           height: "100%",
+          width: "calc(100vw - 300px)",
           display: "flex",
           flexDirection: "column-reverse",
           overflowAnchor: "auto",

@@ -19,6 +19,9 @@ export const snackbarContext = createContext({
   setSnackbar: (message: SnackbarMessage) => {
     console.error("Snackbar Context Has Not Initialized!");
   },
+  closeSnackbar: () => {
+    console.error("Snackbar Context Has Not Initialized!");
+  },
 });
 
 const SnackbarProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
@@ -38,7 +41,7 @@ const SnackbarProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     }
   }, [snackPack, messageInfo, open]);
 
-  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === "clickaway") {
       return;
     }
@@ -55,6 +58,7 @@ const SnackbarProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
         setSnackbar: (message: SnackbarMessage) => {
           setSnackPack((prev) => [...prev, message]);
         },
+        closeSnackbar: handleClose,
       }}
     >
       <Snackbar

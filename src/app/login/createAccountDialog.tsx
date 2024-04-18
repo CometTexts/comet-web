@@ -84,7 +84,6 @@ const CreateAccountDialog: React.FC<IProps> = ({
   };
 
   const handlePhoneChange = (value: string, info: MuiTelInputInfo) => {
-    console.log(value, info);
     setPhone(value);
   };
 

@@ -1,21 +1,23 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
-import { ChangeEventHandler, useState } from "react";
+import { ChangeEventHandler, useContext, useState } from "react";
 import { MuiOtpInput } from "mui-one-time-password-input";
 import pb from "@/pb";
 import { Collections, Group, User } from "@/types";
 import useAuthStore from "@/hooks/useAuthStore";
+import { snackbarContext } from "@/components/SnackBar";
 
 interface IProps {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  loadGroups: () => Promise<void>;
+  addGroup: (group: Group) => void;
 }
 
-const JoinGroupDialog: React.FC<IProps> = ({ isOpen, setIsOpen, loadGroups }) => {
+const JoinGroupDialog: React.FC<IProps> = ({ isOpen, setIsOpen, addGroup }) => {
   const [joinCode, setJoinCode] = useState("");
   const [fetchedGroup, setFetchedGroup] = useState<Group>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>("Join Group");
   const [authStore] = useAuthStore();
+  const { setSnackbar } = useContext(snackbarContext);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -50,16 +52,24 @@ const JoinGroupDialog: React.FC<IProps> = ({ isOpen, setIsOpen, loadGroups }) =>
   };
 
   const handleJoin = async () => {
-    const group = await pb.collection(Collections.Groups).getFirstListItem("", { headers: { "Join-Code": joinCode } });
+    const group = await pb
+      .collection(Collections.Groups)
+      .getFirstListItem<Group>("", { headers: { "Join-Code": joinCode } });
     if (group) {
       // Join group
-      await pb.collection(Collections.Users).update(authStore.model?.id, {
-        joinedGroups: [...authStore.model?.joinedGroups, group.id],
-      } as User);
-      loadGroups();
-      handleClose();
-    } else {
-      // tell the user code is invalid
+      try {
+        await pb.collection(Collections.Users).update(authStore.model?.id, {
+          joinedGroups: [...authStore.model?.joinedGroups, group.id],
+        } as User);
+        addGroup(group);
+        handleClose();
+      } catch {
+        setSnackbar({
+          message: "Failed to join group!",
+          isAlert: true,
+          severity: "error",
+        });
+      }
     }
   };
 

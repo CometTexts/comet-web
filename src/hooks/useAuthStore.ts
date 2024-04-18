@@ -1,3 +1,4 @@
+import { PBEventHandler, pocketBaseHandler } from "@/messageEventHandler";
 import pb from "@/pb";
 import { User } from "@/types";
 import { AuthModel } from "pocketbase";
@@ -5,7 +6,7 @@ import { useEffect, useState } from "react";
 
 interface AuthStore {
   token: string;
-  model: AuthModel | User;
+  model: User;
   isValid: boolean;
   isAdmin: boolean;
 }
@@ -13,7 +14,7 @@ interface AuthStore {
 const useAuthStore = (): [AuthStore, (newAuthStore: AuthStore) => void] => {
   const [authStore, setAuthStore] = useState<AuthStore>({
     token: pb.authStore.token,
-    model: pb.authStore.model,
+    model: pb.authStore.model as User,
     isValid: pb.authStore.isValid,
     isAdmin: pb.authStore.isAdmin,
   });
@@ -23,9 +24,21 @@ const useAuthStore = (): [AuthStore, (newAuthStore: AuthStore) => void] => {
   };
 
   useEffect(() => {
-    return pb.authStore.onChange((token, model) => {
-      setAuthStore({ token, model, isValid: pb.authStore.isValid, isAdmin: pb.authStore.isAdmin });
+    const pbUnsubscribe = pb.authStore.onChange((token, model) => {
+      setAuthStore({ token, model: model as User, isValid: pb.authStore.isValid, isAdmin: pb.authStore.isAdmin });
     });
+
+    const handleUserEvent: PBEventHandler<User> = ({ action, record }) => {
+      if (record.id === authStore.model?.id && action === "update") {
+        pb.authStore.save(authStore.token, record);
+      }
+    };
+
+    pocketBaseHandler.on("userEvent", handleUserEvent);
+
+    return () => {
+      pbUnsubscribe();
+    };
   }, []);
 
   return [authStore, handleSetAuthStore];
